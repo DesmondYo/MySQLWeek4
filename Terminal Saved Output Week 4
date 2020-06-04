@@ -1,0 +1,249 @@
+Last login: Wed Jun  3 11:23:53 on ttys000
+Dtown@Dezs-MacBook-Air ~ % echo 'export PATH=/usr/local/mysql/bin:$PATH' >> ~/.bash_profile
+Dtown@Dezs-MacBook-Air ~ % . ~/.bash_profile
+Dtown@Dezs-MacBook-Air ~ % env
+TMPDIR=/var/folders/86/2t8s25710vlgkx0z37cgzcn00000gn/T/
+XPC_FLAGS=0x0
+TERM_PROGRAM_VERSION=433
+LANG=en_US.UTF-8
+TERM_PROGRAM=Apple_Terminal
+XPC_SERVICE_NAME=0
+TERM_SESSION_ID=7CF6B843-7EA8-4106-80D8-07EE12A46808
+TERM=xterm-256color
+SSH_AUTH_SOCK=/private/tmp/com.apple.launchd.RtQwJwTxVd/Listeners
+SHELL=/bin/zsh
+HOME=/Users/Dtown
+LOGNAME=Dtown
+USER=Dtown
+PATH=/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/mysql/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin
+SHLVL=1
+PWD=/Users/Dtown
+OLDPWD=/Users/Dtown
+_=/usr/bin/env
+Dtown@Dezs-MacBook-Air ~ % mysql -u root -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 182
+Server version: 8.0.20 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> DROP PROCEDURE employee;
+ERROR 1046 (3D000): No database selected
+mysql> show employees;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'employees' at line 1
+mysql> desc employees;
+ERROR 1046 (3D000): No database selected
+mysql> use employees;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> show tables;
++----------------------+
+| Tables_in_employees  |
++----------------------+
+| current_dept_emp     |
+| departments          |
+| dept_emp             |
+| dept_emp_latest_date |
+| dept_manager         |
+| employee_desc        |
+| employee_details     |
+| employee_info        |
+| employee_information |
+| employees            |
+| salaries             |
+| titles               |
++----------------------+
+12 rows in set (0.02 sec)
+
+mysql> DROP PROCEDURE employee;
+Query OK, 0 rows affected (0.18 sec)
+
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE employee(IN employees int)
+    -> BEGIN
+    -> SELECT * FROM employees LIMIT employees;
+    -> END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER;
+    -> CALL employee(5);
+    -> //
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'DELIMITER;CALL employee(5)' at line 1
+mysql> CALL employee(5);
+    -> //
++--------+------------+------------+-----------+--------+------------+
+| emp_no | birth_date | first_name | last_name | gender | hire_date  |
++--------+------------+------------+-----------+--------+------------+
+|  10008 | 1958-02-19 | Saniya     | Kalloufi  | M      | 1994-09-15 |
+|  10009 | 1952-04-19 | Sumant     | Peac      | F      | 2002-01-01 |
+|  10010 | 1963-06-01 | Duangkaew  | Piveteau  | F      | 2002-01-01 |
+|  10011 | 1953-11-07 | Mary       | Sluis     | F      | 1990-01-22 |
+|  10012 | 1960-10-04 | Patricio   | Bridgland | M      | 2002-01-01 |
++--------+------------+------------+-----------+--------+------------+
+5 rows in set (0.05 sec)
+
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> DROP PROCEDURE FindSalary;
+    -> //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE FindSalary(
+    -> IN lv_emp_no int(11)
+    -> )
+    -> BEGIN
+    -> SELECT e.emp_no, s.salary, e.first_name, e.last_name, e.gender, e.hire_date
+    -> FROM employees e
+    -> INNER JOIN salaries s ON s.emp_no = e.emp_no
+    -> WHERE lv_emp_no = e.emp_no;
+    -> END //
+Query OK, 0 rows affected, 1 warning (0.02 sec)
+
+mysql> DELIMITER ;
+mysql> CALL FindSalary(10012);
++--------+--------+------------+-----------+--------+------------+
+| emp_no | salary | first_name | last_name | gender | hire_date  |
++--------+--------+------------+-----------+--------+------------+
+|  10012 |  40000 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  41867 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  42318 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  44195 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  46460 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  46485 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  47364 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  51122 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  54794 | Patricio   | Bridgland | M      | 2002-01-01 |
+|  10012 |  54423 | Patricio   | Bridgland | M      | 2002-01-01 |
++--------+--------+------------+-----------+--------+------------+
+10 rows in set (0.06 sec)
+
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> DROP PROCEDURE CurrentSalary;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE PROCEDURE CurrentSalary(
+    -> IN lv_first_name varchar(20),
+    -> IN lv_last_name varchar(20)
+    -> )
+    -> BEGIN
+    -> SELECT s.salary
+    -> FROM employees e
+    -> INNER JOIN salaries s ON s.emp_no = e.emp_no
+    -> WHERE e.first_name = lv_first_name
+    -> AND e.last_name = lv_last_name
+    -> AND to_date < curdate() 
+    -> ORDER BY to_date desc LIMIT 1;
+    -> END //
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> DELIMITER ;
+mysql> CALL CurrentSalary('Aloys','Kinley');
++--------+
+| salary |
++--------+
+|  43250 |
++--------+
+1 row in set (0.82 sec)
+
+Query OK, 0 rows affected (0.82 sec)
+
+mysql> DROP PROCEDURE HigherSalary;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE PROCEDURE HigherSalary( 
+    -> )
+    -> BEGIN
+    -> SELECT salary
+    -> FROM salaries
+    -> WHERE salary > 100000 
+    -> ORDER BY salary desc LIMIT 25;
+    -> END // 
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+mysql> CALL HigherSalary();
++--------+
+| salary |
++--------+
+| 158220 |
+| 157821 |
+| 156286 |
+| 155709 |
+| 155513 |
+| 155377 |
+| 155190 |
+| 154888 |
+| 154885 |
+| 154459 |
+| 154376 |
+| 154227 |
+| 153715 |
+| 153458 |
+| 153166 |
+| 152710 |
+| 152687 |
+| 152576 |
+| 152412 |
+| 152220 |
+| 152208 |
+| 151929 |
+| 151768 |
+| 151596 |
+| 151565 |
++--------+
+25 rows in set (4.31 sec)
+
+Query OK, 0 rows affected (4.31 sec)
+
+mysql> DROP PROCEDURE SpecificTitle;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE PROCEDURE SpecificTitle(
+    -> IN lv_title varchar(50)
+    -> )
+    -> BEGIN
+    -> SELECT e.first_name, e.last_name, t.title
+    -> FROM titles t
+    -> INNER JOIN employees e on t.emp_no = e.emp_no
+    -> WHERE t.title = lv_title LIMIT 10;
+    -> END // 
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL SpecificTitle('Staff');
++------------+-------------+-------+
+| first_name | last_name   | title |
++------------+-------------+-------+
+| Mary       | Sluis       | Staff |
+| Kazuhito   | Cappelletti | Staff |
+| Cristinel  | Bouloucos   | Staff |
+| Lillian    | Haddadi     | Staff |
+| Bader      | Swan        | Staff |
+| Huan       | Lortz       | Staff |
+| Alejandro  | Brender     | Staff |
+| Uri        | Lenart      | Staff |
+| Magy       | Stamatiou   | Staff |
+| Lucien     | Rosenbaum   | Staff |
++------------+-------------+-------+
+10 rows in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> 
